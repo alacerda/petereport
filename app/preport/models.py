@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 from django.db import models
-from django.utils import timezone
 from martor.models import MartorField
 
 
@@ -11,7 +11,7 @@ class DB_CWE(models.Model):
 	cwe_id = models.IntegerField(blank=False, unique=True)
 	cwe_name = models.CharField(max_length=255, blank=True)
 	cwe_description = models.TextField(blank=True)
-	
+
 # ---------- Product ------------
 
 class DB_Product(models.Model):

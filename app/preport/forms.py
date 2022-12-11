@@ -1,12 +1,13 @@
+import datetime
+
 from django import forms
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
-from django.forms import ModelForm, Textarea, TextInput, DateField, DateInput, ModelChoiceField, CheckboxInput, CheckboxSelectMultiple, PasswordInput, EmailField, BooleanField
-from .models import DB_Report, DB_Finding, DB_Product, DB_Finding_Template, DB_Appendix, DB_CWE, DB_AttackTree, DB_Custom_field
-from martor.fields import MartorFormField
+from django.forms import Textarea, TextInput, DateInput, ModelChoiceField, EmailField, BooleanField
 
-import datetime
+from .models import DB_Report, DB_Finding, DB_Product, DB_Finding_Template, DB_Appendix, DB_CWE, DB_AttackTree, \
+	DB_Custom_field
+
 
 class NewProductForm(forms.ModelForm):
 
@@ -74,7 +75,7 @@ class NewFindingForm(forms.ModelForm):
             'title': TextInput(attrs={'class': 'form-control', 'type': "text", 'required': "required", 'placeholder': "Finding title"}),
             'cvss_base_score': TextInput(attrs={'class': 'form-control', 'type': "text", 'required': "required", 'placeholder': "CVSS Base Score"}),
            }
-        
+
 
 
 class NewFindingTemplateForm(forms.ModelForm):
@@ -101,7 +102,7 @@ class NewFindingTemplateForm(forms.ModelForm):
             'title': TextInput(attrs={'class': 'form-control', 'type': "text", 'required': "required", 'placeholder': "Finding title"}),
             'cvss_base_score': TextInput(attrs={'class': 'form-control', 'type': "text", 'required': "required", 'placeholder': "CVSS Base Score"}),
         }
-        
+
 
 
 
@@ -149,7 +150,7 @@ class AddUserForm(UserCreationForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(AddUserForm, self).__init__(*args, **kwargs) 
+        super(AddUserForm, self).__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({'class': 'form-control', 'type': "text", 'required': "required", 'placeholder': "Username"})
         self.fields['password1'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Secret P@ssW0rd'})
         self.fields['password2'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Secret P@ssW0rd'})

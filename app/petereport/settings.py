@@ -10,12 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
 import time
-import os
-from config.startup import *
-from config.petereport_config import PETEREPORT_CONFIG, PETEREPORT_TEMPLATES, DJANGO_CONFIG
+from pathlib import Path
 
+from config.petereport_config import PETEREPORT_TEMPLATES, DJANGO_CONFIG
+from config.startup import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -184,7 +183,7 @@ MARTOR_ENABLE_CONFIGS = {
 MARTOR_TOOLBAR_BUTTONS = [
     'bold', 'italic', 'horizontal', 'heading', 'pre-code',
     'blockquote', 'unordered-list', 'ordered-list',
-    'link', 'image-link', 'image-upload', 
+    'link', 'image-link', 'image-upload',
     'direct-mention', 'toggle-maximize', 'help'
 ]
 
