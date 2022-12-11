@@ -1,48 +1,43 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, HttpResponseNotFound
-from django.utils.html import strip_tags
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.template.loader import render_to_string
-from django.utils.safestring import mark_safe
-from django.core.files.storage import FileSystemStorage
-from django.views.decorators.csrf import csrf_protect
-
-# Forms
-from .forms import NewProductForm, NewReportForm, NewFindingForm, NewAppendixForm, NewFindingTemplateForm, AddUserForm, NewAttackTreeForm, NewCWEForm, NewFieldForm
-
-# Model
-from .models import DB_Report, DB_Finding, DB_Product, DB_Finding_Template, DB_Appendix, DB_CWE, DB_AttackTree, DB_Custom_field
-
-# Decorators
-from .decorators import allowed_users
-
+import base64
+import csv
 # Libraries
 import datetime
-import textwrap
-import requests
-import base64
-import bleach
-import uuid
-import json
-import csv
 import io
+import json
 import os
+import textwrap
+import uuid
 from collections import Counter
-import pypandoc
-import cairosvg
-from PIL import Image
 
-# Martor
-from petereport.settings import MAX_IMAGE_UPLOAD_SIZE, MARTOR_UPLOAD_PATH, MEDIA_URL, MEDIA_ROOT, TEMPLATES_ROOT, REPORTS_MEDIA_ROOT, SERVER_CONF
+import bleach
+import cairosvg
+import pypandoc
+import requests
+from PIL import Image
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User, Group
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
+from django.core.files.storage import default_storage
+from django.http import HttpResponse, HttpResponseNotFound
+from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 
 # PeTeReport config
-from config.petereport_config import PETEREPORT_MARKDOWN, PETEREPORT_TEMPLATES, PETEREPORT_CONFIG, DEFECTDOJO_CONFIG, DJANGO_CONFIG
+from config.petereport_config import PETEREPORT_MARKDOWN, PETEREPORT_TEMPLATES, DEFECTDOJO_CONFIG
+# Martor
+from petereport.settings import MAX_IMAGE_UPLOAD_SIZE, MARTOR_UPLOAD_PATH, MEDIA_URL, MEDIA_ROOT, TEMPLATES_ROOT, \
+	REPORTS_MEDIA_ROOT, SERVER_CONF
+# Decorators
+from .decorators import allowed_users
+# Forms
+from .forms import NewProductForm, NewReportForm, NewFindingForm, NewAppendixForm, NewFindingTemplateForm, AddUserForm, \
+	NewAttackTreeForm, NewCWEForm, NewFieldForm
+# Model
+from .models import DB_Report, DB_Finding, DB_Product, DB_Finding_Template, DB_Appendix, DB_CWE, DB_AttackTree, \
+	DB_Custom_field
 
 
 # ----------------------------------------------------------------------
@@ -85,7 +80,7 @@ def markdown_uploader(request):
             if PETEREPORT_MARKDOWN['martor_upload_method'] == 'BASE64':
 
                 image_content_base64 = base64.b64encode(image.read()).decode('utf-8')
-             
+
                 image_content_base64_final = 'data:' + image.content_type +';base64,' + image_content_base64
 
                 data = json.dumps({
@@ -117,7 +112,7 @@ def markdown_uploader(request):
 
 
 # ----------------------------------------------------------------------
-#                           index 
+#                           index
 # ----------------------------------------------------------------------
 
 
@@ -175,13 +170,13 @@ def index(request):
 
 
     # TOP 10 findings
-    DB_finding_query = DB_finding_query[:10] 
+    DB_finding_query = DB_finding_query[:10]
 
     return render(request, 'home/index.html', {'total_reports': total_reports, 'total_products': total_products, 'count_product_findings_total': count_product_findings_total, 'count_product_findings_critical_high': count_product_findings_critical_high, 'count_product_findings_medium': count_product_findings_medium, 'DB_finding_query':DB_finding_query, 'cwe_categories': cwe_categories})
 
 
 # ----------------------------------------------------------------------
-#                           Configuration 
+#                           Configuration
 # ----------------------------------------------------------------------
 
 @login_required
@@ -197,12 +192,12 @@ def user_list(request):
 @login_required
 @allowed_users(allowed_roles=['administrator'])
 def user_add(request):
-    
+
     if request.method == 'POST':
         form = AddUserForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            
+
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user_group = form.cleaned_data.get('group')
@@ -230,7 +225,7 @@ def user_edit(request,pk):
         form = AddUserForm(request.POST, instance=DB_user_query)
         if form.is_valid():
             user = form.save(commit=False)
-            
+
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user_group = form.cleaned_data.get('group')
@@ -263,7 +258,7 @@ def user_delete(request):
 
 
 # ----------------------------------------------------------------------
-#                           Products 
+#                           Products
 # ----------------------------------------------------------------------
 
 @login_required
@@ -363,7 +358,7 @@ def product_view(request,pk):
 
 
 # ----------------------------------------------------------------------
-#                           Reports 
+#                           Reports
 # ----------------------------------------------------------------------
 
 @login_required
@@ -458,7 +453,7 @@ def report_view(request,pk):
     count_findings_none = 0
 
     cwe_rows = []
-    
+
     for finding in DB_finding_query:
         # Only reporting Critical/High/Medium/Low/Info findings
         if finding.severity == 'None':
@@ -501,7 +496,7 @@ def report_view(request,pk):
 
 @login_required
 def uploadsummaryfindings(request,pk):
-    
+
     DB_report_query = get_object_or_404(DB_Report, pk=pk)
 
     if request.method == 'POST':
@@ -535,8 +530,8 @@ def uploadsummaryfindings(request,pk):
                 os.remove(media_url_severity)
 
             fs = FileSystemStorage()
-            filename_severity = fs.save(img_url_severity, dataimgSeveritybar) 
-            uploaded_file_url_severity = fs.url(filename_severity) 
+            filename_severity = fs.save(img_url_severity, dataimgSeveritybar)
+            uploaded_file_url_severity = fs.url(filename_severity)
 
             DB_report_query.report_executive_summary = uploaded_file_url_severity
 
@@ -550,8 +545,8 @@ def uploadsummaryfindings(request,pk):
                 os.remove(media_url_categories)
 
             fs = FileSystemStorage()
-            filename_categories = fs.save(img_url_categories, dataCWE) 
-            uploaded_file_url_categories = fs.url(filename_categories) 
+            filename_categories = fs.save(img_url_categories, dataCWE)
+            uploaded_file_url_categories = fs.url(filename_categories)
 
             DB_report_query.report_categories_summary = uploaded_file_url_categories
 
@@ -586,7 +581,7 @@ def reportdownloadmarkdown(request,pk):
     md_subject = PETEREPORT_MARKDOWN['subject']
     md_website = PETEREPORT_MARKDOWN['website']
 
-    
+
     # IMAGES
     if PETEREPORT_MARKDOWN['martor_upload_method'] == 'BASE64':
         report_executive_summary_image = DB_report_query.executive_summary_image
@@ -694,7 +689,7 @@ def reportdownloadhtml(request,pk):
 
     count_finding_query = DB_finding_query.count()
     counter_finding = counter_finding_critical = counter_finding_high = counter_finding_medium = counter_finding_low = counter_finding_info = count_findings_summary = 0
-    
+
     # IMAGES
     if PETEREPORT_MARKDOWN['martor_upload_method'] == 'BASE64':
         report_executive_summary_image = DB_report_query.executive_summary_image
@@ -712,7 +707,7 @@ def reportdownloadhtml(request,pk):
 
     # FINDINGS
     for finding in DB_finding_query:
-        
+
         # Custom fields
         template_custom_fields = ""
 
@@ -726,27 +721,27 @@ def reportdownloadhtml(request,pk):
             if finding.severity == 'Critical':
                 color_cell_bg = CRITICAL
                 color_text_severity = CRITICAL
-                counter_finding_critical += 1 
+                counter_finding_critical += 1
             elif finding.severity == 'High':
                 color_cell_bg = HIGH
                 color_text_severity = HIGH
-                counter_finding_high += 1 
+                counter_finding_high += 1
             elif finding.severity == 'Medium':
                 color_cell_bg = WARNING
                 color_text_severity = WARNING
-                counter_finding_medium += 1 
+                counter_finding_medium += 1
             elif finding.severity == 'Low':
                 color_cell_bg = LOW
                 color_text_severity = LOW
-                counter_finding_low += 1 
+                counter_finding_low += 1
             else:
                 color_cell_bg = INFO
                 color_text_severity = INFO
-                counter_finding_info += 1 
+                counter_finding_info += 1
 
             # Summary table
             finding_summary_table += render_to_string('tpl/html/html_finding_summary.html', {'finding': finding, 'counter_finding': counter_finding, 'color_text_severity': color_text_severity})
-            
+
             # Custom fields
             if finding.custom_field_finding.all():
 
@@ -769,7 +764,7 @@ def reportdownloadhtml(request,pk):
 
                 template_appendix_in_finding += ''.join("</td>\n")
 
-            
+
             # attack trees
             if finding.attacktree_finding.all():
 
@@ -777,11 +772,11 @@ def reportdownloadhtml(request,pk):
 
                 for attacktree_in_finding in finding.attacktree_finding.all():
                     html_attacktree = render_to_string('tpl/html/md_attacktree.md', {'attacktree_in_finding': attacktree_in_finding})
-                    
+
                     html_attacktree_svg = (html_attacktree.replace("<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"", "")).replace("\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">", "")
 
                     template_attacktree_in_finding += ''.join(html_attacktree_svg + "<br>")
-                    
+
                 template_attacktree_in_finding += ''.join("</td>\n")
 
 
@@ -798,7 +793,7 @@ def reportdownloadhtml(request,pk):
     final_markdown = textwrap.dedent(render_md)
     final_markdown_output = mark_safe(final_markdown)
 
-    html_template = os.path.join(TEMPLATES_ROOT, PETEREPORT_TEMPLATES['html_template'])    
+    html_template = os.path.join(TEMPLATES_ROOT, PETEREPORT_TEMPLATES['html_template'])
     pathfile = f"html/{name_file}"
 
     html_file_output = os.path.join(REPORTS_MEDIA_ROOT, pathfile)
@@ -909,7 +904,7 @@ def reportdownloadpdf(request,pk):
 
             # Summary table
             pdf_finding_summary += render_to_string('tpl/pdf/pdf_finding_summary.md', {'finding': finding, 'counter_finding': counter_finding, 'severity_box': severity_box})
-            
+
             severity_color_finding = "\\textcolor{" + f"{severity_color}" +"}{" + f"{finding.severity}" + "}"
 
             # Custom fields
@@ -948,12 +943,12 @@ def reportdownloadpdf(request,pk):
                     byte_io = io.BytesIO()
                     img = Image.open(io.BytesIO(img))
 
-                    img.save(byte_io,format="PNG") 
+                    img.save(byte_io,format="PNG")
                     image_content_base64 = base64.b64encode(byte_io.getbuffer()).decode('utf-8')
                     image_content_base64_final = 'data:image/png;base64,' + image_content_base64
 
                     pdf_attacktree = render_to_string('tpl/pdf/pdf_attacktree.md', {'attacktree_in_finding': attacktree_in_finding, 'image_content_base64': image_content_base64_final})
-            
+
                     template_attacktree_in_finding += ''.join(pdf_attacktree + "\n")
 
                 template_attacktree_in_finding += ''.join("\\pagebreak")
@@ -1025,7 +1020,7 @@ def reportdownloadjupyter(request,pk):
 
     # Attacktree init
     template_attacktree = render_to_string('tpl/jupyter/attacktrees.ipynb')
-    
+
     # IMAGES
     if PETEREPORT_MARKDOWN['martor_upload_method'] == 'BASE64':
         report_executive_summary_image = DB_report_query.executive_summary_image
@@ -1045,19 +1040,19 @@ def reportdownloadjupyter(request,pk):
             template_appendix_in_finding = template_attacktree_in_finding = ''
 
             if finding.severity == 'Critical':
-                counter_finding_critical += 1 
+                counter_finding_critical += 1
             elif finding.severity == 'High':
-                counter_finding_high += 1 
+                counter_finding_high += 1
             elif finding.severity == 'Medium':
-                counter_finding_medium += 1 
+                counter_finding_medium += 1
             elif finding.severity == 'Low':
-                counter_finding_low += 1 
+                counter_finding_low += 1
             else:
-                counter_finding_info += 1 
+                counter_finding_info += 1
 
             # Summary table
             ipynb_finding_summary += render_to_string('tpl/jupyter/finding_summary.ipynb', {'finding': finding, 'counter_finding': counter_finding})
-            
+
             # finding
             ipynb_finding = render_to_string('tpl/jupyter/finding.ipynb', {'finding': finding})
 
@@ -1084,7 +1079,7 @@ def reportdownloadjupyter(request,pk):
                     byte_io = io.BytesIO()
                     img = Image.open(io.BytesIO(img))
 
-                    img.save(byte_io,format="PNG") 
+                    img.save(byte_io,format="PNG")
                     image_content_base64 = base64.b64encode(byte_io.getbuffer()).decode('utf-8')
                     image_content_base64_final = 'data:image/png;base64,' + image_content_base64
 
@@ -1093,8 +1088,8 @@ def reportdownloadjupyter(request,pk):
                     ipynb_attacktree = render_to_string('tpl/jupyter/attacktree.ipynb', {'attacktree_in_finding': attacktree_in_finding, 'image_content_base64': image_content_base64_final})
 
                     template_attacktree += ''.join(ipynb_attacktree)
-                    
-            
+
+
             template_findings += ''.join(ipynb_finding)
 
     render_jupyter = render_to_string('tpl/jupyter/report.ipynb', {'DB_report_query': DB_report_query, 'template_findings': template_findings, 'template_appendix': template_appendix, 'template_attacktree': template_attacktree, 'finding_summary': ipynb_finding_summary, 'md_author': md_author, 'report_date': report_date, 'md_subject': md_subject, 'md_website': md_website, 'counter_finding_critical': counter_finding_critical, 'counter_finding_high': counter_finding_high, 'counter_finding_medium': counter_finding_medium, 'counter_finding_low': counter_finding_low, 'counter_finding_info': counter_finding_info, 'report_executive_summary_image': report_executive_summary_image, 'report_executive_categories_image': report_executive_categories_image})
@@ -1111,7 +1106,7 @@ def reportdownloadjupyter(request,pk):
 
 
 # ----------------------------------------------------------------------
-#                           Findings 
+#                           Findings
 # ----------------------------------------------------------------------
 
 
@@ -1147,9 +1142,9 @@ def finding_add(request,pk):
 
     if request.method == 'POST':
         form = NewFindingForm(request.POST)
-        
+
         if form.is_valid():
-            finding = form.save(commit=False)            
+            finding = form.save(commit=False)
             finding.report = DB_report_query
             finding.finding_id = uuid.uuid4()
             finding.save()
@@ -1275,7 +1270,7 @@ def downloadfindingscsv(request,pk):
 @login_required
 @allowed_users(allowed_roles=['administrator'])
 def upload_csv_findings(request,pk):
-    
+
     DB_report_query = get_object_or_404(DB_Report, pk=pk)
 
     if request.method == 'POST':
@@ -1303,9 +1298,9 @@ def upload_csv_findings(request,pk):
         f_references = header.index("References")
         f_appendix = header.index("Appendix")
         f_appendix_description = header.index("Appendix Description")
-         
+
         List = []
-         
+
         for row in csvReader:
             fid = row[f_id]
             ftitle = row[f_title]
@@ -1321,7 +1316,7 @@ def upload_csv_findings(request,pk):
             freferences = row[f_references]
             fappendix = row[f_appendix]
             fappendixdescription = row[f_appendix_description]
-            
+
             List.append([fid,ftitle,fstatus,fseverity,fcvss_score,fcvss,fcwe,fdescription,flocation,fimpact,frecommendation,freferences,fappendix,fappendixdescription])
 
             DB_cwe = get_object_or_404(DB_CWE, pk=fcwe)
@@ -1421,7 +1416,7 @@ def defectdojo_import(request,pk,ddpk):
 
 
 # ----------------------------------------------------------------------
-#                           Appendix 
+#                           Appendix
 # ----------------------------------------------------------------------
 
 
@@ -1446,7 +1441,7 @@ def appendix_add(request,pk):
     if request.method == 'POST':
         form = NewAppendixForm(request.POST, reportpk=pk)
         if form.is_valid():
-            appendix = form.save(commit=False)            
+            appendix = form.save(commit=False)
             finding_pk = form['finding'].value()
             DB_finding_m2m = get_object_or_404(DB_Finding, pk=finding_pk)
             appendix.save()
@@ -1529,7 +1524,7 @@ def appendix_view(request,pk):
 
 
 # ----------------------------------------------------------------------
-#                           Custom Fields 
+#                           Custom Fields
 # ----------------------------------------------------------------------
 
 @login_required
@@ -1603,7 +1598,7 @@ def field_delete(request):
         return HttpResponse('{"status":"fail"}', content_type='application/json')
 
 # ----------------------------------------------------------------------
-#                           Templates 
+#                           Templates
 # ----------------------------------------------------------------------
 
 
@@ -1718,7 +1713,7 @@ def templateaddreport(request,pk,reportpk):
 
 
 # ----------------------------------------------------------------------
-#                           CWE 
+#                           CWE
 # ----------------------------------------------------------------------
 
 @login_required
@@ -1785,7 +1780,7 @@ def cwe_edit(request,pk):
 
 
 # ----------------------------------------------------------------------
-#                           Attack Tree 
+#                           Attack Tree
 # ----------------------------------------------------------------------
 
 
@@ -1860,7 +1855,7 @@ goals:
     if request.method == 'POST':
         form = NewAttackTreeForm(request.POST, reportpk=pk)
         if form.is_valid():
-            attacktree = form.save(commit=False)            
+            attacktree = form.save(commit=False)
             finding_pk = form['finding'].value()
             DB_finding_m2m = get_object_or_404(DB_Finding, pk=finding_pk)
             attacktree.save()
